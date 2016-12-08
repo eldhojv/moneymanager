@@ -126,6 +126,8 @@
             <div class="form-group">
             	<a href="register.php">Sign Up Here...</a>
             </div>
+
+            <h3><center>By <a href="www.flynlabs.tk">Flyn labs</a></center></h3>
         
         </div>
    

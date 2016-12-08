@@ -9,7 +9,7 @@
 	define('DBPASS', '');
 	define('DBNAME', 'moneymanager');
 	
-	$conn = mysql_connect(DBHOST,DBUSER,DBPASS);
+	$conn = mysql_connect(DBHOST,DBUSER,DBPASS,DBNAME);
 	$dbcon = mysql_select_db(DBNAME);
 	
 	if ( !$conn ) {
