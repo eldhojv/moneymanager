@@ -4,7 +4,8 @@
     require_once 'dbconnect.php';
     
     // if session is not set this will redirect to login page
-    if( !isset($_SESSION['user']) ) {
+    if( !isset($_SESSION['user']) ) 
+    {
         header("Location: home.php");
         exit;
     }
@@ -12,6 +13,72 @@
     $res=mysql_query("SELECT * FROM users WHERE userId=".$_SESSION['user']);
     $userRow=mysql_fetch_array($res);
 ?>
+
+<!-- updating table -->
+<?php
+$error = false;
+if ( isset($_POST['submit']) ) 
+{
+  
+$userId=$userRow['userId'];    
+$pass1 = trim($_POST['pass1']);
+$pass2 = trim($_POST['pass2']);
+
+if($pass1!=$pass2)
+ {
+    $error=true;
+    $errMSG="Password donot match";
+ }   
+
+$pass1 = strip_tags($pass1);
+$pass = htmlspecialchars($pass1);
+
+// password validation
+
+        if (empty($pass1))
+        {
+            $error = true;
+            $errMSG = "Please enter password.";
+        } 
+        else if(strlen($pass1) < 5) 
+        {
+            $error = true;
+            $errMSG = "Password must have atleast 5 characters.";
+        }
+        
+        // encryption password using SHA256();
+
+        $password = hash('sha256', $pass1);
+        
+        // if  no error, continue 
+
+        if( !$error ) 
+        {
+            
+            $sql = "UPDATE users SET userPass = '$password' WHERE userId = '$userId'" ;
+            $res = mysql_query($sql);
+                
+            if ($res) 
+            {
+                //$errTyp = "success";
+                $errMSG = "Successfully updated password";
+                
+            } 
+            else 
+            {
+                //$errTyp = "Error Dgr";
+                $errMSG = "Something went wrong, try again later...";   
+            }   
+                
+        }
+
+
+}
+?>        
+<!-- end of updating table -->
+
+
+
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -41,11 +108,11 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="home.php">MoneyManager</a> 
-                <div class="andmsg" style="color:white;"><a href="www.semicolon.com";>By semiColon Tech.</a></div>
-                <div class="andmsg" style="color:white;">Android app will be availabe soon &nbsp;</div>
-            </div>
-
+                <a class="navbar-brand" href="home.php">MoneyManager</a> <hr>
+                <div class="brand"  style="color:white;"><a href="www.flynlabs.tk";>By Flyn labs.</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="play.google.com">Android App</a></div><br />
+                <!-- <div   style="color:white; position:centre;">Android app &nbsp;</div> -->
+</div>
  <div class="header"> 
 
 <span class="glyphicon glyphicon-user"></span> <?php echo $userRow['userEmail']; ?>&nbsp;
@@ -111,21 +178,29 @@
                         <div class="panel-body">
                             <div class="row">
                                 <div class="col-md-6">
-                                    
-                                    <form role="form">
+
+                                    <?php if ( isset($errMSG) ) { ?>
+                                     <div class="form-group">
+                                     <div class="alert alert-<?php echo ($errTyp=="success") ? "success" : $errTyp; ?>">
+                                     <span class="glyphicon glyphicon-info-sign"></span> <?php echo $errMSG; ?>
+                                     </div>
+                                     </div>
+                                     <?php } ?>
+
+                                    <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" autocomplete="off">
                                         <div class="form-group">
                                            
                                             <label>New Password</label>
-                                            <input class="form-control" placeholder="Enter Keyword" />
+                                            <input class="form-control" name="pass1" placeholder="Enter Keyword" />
                                         </div>
                                         <div class="form-group">
                                             
                                             <label>Re enter password</label>
-                                            <input class="form-control" placeholder="Enter Keyword" />
+                                            <input class="form-control" name="pass2" placeholder="Enter Keyword" />
                                         </div>
 
                                        
-                                        <button type="submit" class="btn btn-primary">Submit Button</button>
+                                        <button type="submit" name="submit" class="btn btn-primary">Submit Button</button>
                                         <button type="reset" class="btn btn-default">Reset Button</button>
 
                                     </form>
