@@ -1,7 +1,7 @@
 ﻿<?php
     ob_start();
     session_start();
-    require_once 'dbconnect.php';
+    include_once 'dbconnect.php';
     
     // if session is not set this will redirect to login page
     if( !isset($_SESSION['user']) ) {
@@ -12,6 +12,53 @@
     $res=mysql_query("SELECT * FROM users WHERE userId=".$_SESSION['user']);
     $userRow=mysql_fetch_array($res);
 ?>
+<!-- Form submission handling -->
+<?php
+if ( isset($_POST['submit']))
+ {
+  $userId=$userRow['userId'];
+  $spend=$userRow['spend'];
+  $bal=$userRow['balance'];
+  $keyword=$_POST['keyword'];
+  $note=$_POST['note'];
+  $category=$_POST['category'];
+  $date=date("Y/m/d");
+  if (is_numeric($_POST['amount']))
+  {
+   $amount=$_POST['amount'];
+   $spend=$spend+$amount;
+   $bal=$bal-$amount;
+  }
+  else
+  {
+  $error=true;
+  $errMSG="Enter numeric value ";
+  }
+
+//inserting into db
+if( !$error ) 
+{
+ $query = "INSERT INTO track(userId,amount,keyword,note,category,entrydate) VALUES('$userId','$amount','$keyword','$note','$category','$date')";
+ $sql = "UPDATE users ". "SET balance = $bal,spend = $spend ". "WHERE userid = $userId" ;
+ $res = mysql_query($query);
+ $res2 = mysql_query($sql);
+  if ($res && $sql) 
+   {
+   $errTyp = "success";
+   $errMSG = "Successfully Added";
+   } 
+   else 
+   {
+   $errTyp = "Error Dgr";
+   $errMSG = "Something error in entering..."; 
+   }
+
+}
+$res=mysql_query("SELECT * FROM users WHERE userId=".$_SESSION['user']);
+$userRow=mysql_fetch_array($res);
+} 
+?>
+<!-- End of form handling -->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -34,29 +81,7 @@
    <link rel="stylesheet" href="assets/css/calendarview.css">
    <link rel="stylesheet" href="assets/css/cal.css">
    <script src="assets/js/prototype.js"></script>
-    <script src="assets/js/calendarview.js"></script>
-<script>
-      function setupCalendars() {
-        // Embedded Calendar
-        Calendar.setup(
-          {
-            dateField: 'embeddedDateField',
-            parentElement: 'embeddedCalendar'
-          }
-        )
-
-        // Popup Calendar
-        Calendar.setup(
-          {
-            dateField: 'popupDateField',
-            triggerElement: 'popupDateField'
-          }
-        )
-      }
-
-      Event.observe(window, 'load', function() { setupCalendars() })
-    </script>
-
+    
 
 
 
@@ -71,9 +96,10 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="home.php">MoneyManager</a> 
-                <div class="andmsg" style="color:white;"><a href="www.semicolon.com";>By semiColon Tech.</a></div>
-                <div class="andmsg" style="color:white;">Android app will be availabe soon &nbsp;</div>
+                <a class="navbar-brand" href="home.php">MoneyManager</a> <hr>
+                <div class="brand"  style="color:white;"><a href="www.flynlabs.tk";>By Flyn labs.</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="play.google.com">Android App</a></div><br />
+                <!-- <div   style="color:white; position:centre;">Android app &nbsp;</div> -->
             </div>
 
  <div class="header"> 
@@ -143,66 +169,60 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <h3>Add expense</h3>
-                                    <form role="form">
+
+                                    <?php
+                                    if ( isset($errMSG) ) { ?>
+                                     <div class="form-group">
+                                     <div class="alert alert-danger">
+                                     <span class="glyphicon glyphicon-info-sign"></span> <?php echo $errMSG; ?>
+                                     </div>
+                                     </div>
+                                     <?php  }  ?>
+
+                                    <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" autocomplete="off">
                                         <div class=" form-group input-group input-group-lg">
                                         <span class="input-group-addon">$</span>
-                                        <input type="text" class="form-control" placeholder="eg:250" />
+                                        <input type="number" name="amount" class="form-control" placeholder="eg:250" />
                                         <span class="input-group-addon">.00</span>
                                         </div>
                                         <div class="form-group">
                                             
                                             <label>Keyword</label>
-                                            <input class="form-control" placeholder="Enter Keyword" />
+                                            <input class="form-control" name="keyword" placeholder="Enter Keyword" />
                                         </div>
 
 
-
-                                        <!-- <div style="height: 400px; background-color: #efefef; padding: 10px; -webkit-border-radius: 12px; -moz-border-radius: 12px; margin-right: 10px">
-        <h3 style="text-align: center; background-color: white; -webkit-border-radius: 10px; -moz-border-radius: 10px; margin-top: 0px; margin-bottom: 20px; padding: 8px">
-          Embedded Calendar
-        </h3>
-        <div id="embeddedExample" style="">
-          <div id="embeddedCalendar" style="margin-left: auto; margin-right: auto">
-          </div>
-          <br />
-          <div id="embeddedDateField" class="dateField">
-            Select Date
-          </div>
-          <br />
-        </div>
-      </div>
-    
-                                         -->
                                         
                                         
                                         <div class="form-group">
                                             <label>Notes</label>
-                                            <textarea class="form-control" rows="3"></textarea>
+                                            <textarea class="form-control" name="note" rows="3"></textarea>
                                         </div>
                                         
                                         <div class="form-group">
                                             <label>Choose Category</label>
-                                            <select class="form-control">
-                                                <option>One Vale</option>
-                                                <option>Two Vale</option>
-                                                <option>Three Vale</option>
-                                                <option>Four Vale</option>
+                                            <select class="form-control" name="category">
+                                                <option value="1">Transport</option>
+                                                <option value="2">Clothes</option>
+                                                <option value="3">Food</option>
+                                                <option value="4">Communications</option>
                                             </select>
                                         </div>
                                         
-                                        <button type="submit" class="btn btn-primary">Submit Button</button>
+                                        <button type="submit" name="submit" class="btn btn-primary">Submit Button</button>
                                         <button type="reset" class="btn btn-default">Reset Button</button>
 
                                     </form>
         </div>
                                 
+
                                
 <div class="col-md-3 col-sm-12 col-xs-12 "> 
 <div style="float:right;">                       
                     <div class="panel panel-primary text-center no-boder bg-color-green">
                         <div class="panel-body">
                             <i class="fa fa-money fa-3x"></i>
-                            <h3>120 Rs </h3>
+                            <h3><?php echo $userRow['balance']; ?></h3>
                         </div>
                         <div class="panel-footer back-footer-green">
                            Wallet Balance
@@ -211,7 +231,7 @@
                     <div class="panel panel-primary text-center no-boder bg-color-red">
                         <div class="panel-body">
                             <i class="fa fa-money fa-3x"></i>
-                            <h3>20,000 Rs </h3>
+                            <h3><?php echo $userRow['spend']; ?></h3>
                         </div>
                         <div class="panel-footer back-footer-red">
                             Spendings
@@ -225,7 +245,7 @@
                     <div class="col-md-12">
                         
                          <p>
-                        Add your expense here, we will keep track of your spendings
+                        Add your expense here, we will keep track of your spendings(Note:Auto retrieval of date)
                         </p>
                     </div>
                 </div>

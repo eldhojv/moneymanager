@@ -12,6 +12,51 @@
     $res=mysql_query("SELECT * FROM users WHERE userId=".$_SESSION['user']);
     $userRow=mysql_fetch_array($res);
 ?>
+
+<!-- Form submission handling -->
+<?php
+if ( isset($_POST['submit']))
+ {
+  $userId=$userRow['userId'];
+  $debit=$userRow['balance'];
+
+  if (is_numeric($_POST['amount']))
+  {
+   $amount=$_POST['amount'];
+   $debit=$debit+$amount;
+  }
+  else
+  {
+  $error=true;
+  $errMSG="Enter numeric value ";
+  }
+
+//inserting into db
+if( !$error ) 
+{
+ $sql = "UPDATE users ". "SET balance = $debit ". "WHERE userid = $userId" ;
+
+ $res2 = mysql_query($sql);
+  if ($sql) 
+   {
+   $errTyp = "success";
+   $errMSG = "Successfully Added your debit";
+   } 
+   else 
+   {
+   $errTyp = "Error Dgr";
+   $errMSG = "Something error in entering..."; 
+   }
+
+}
+$res=mysql_query("SELECT * FROM users WHERE userId=".$_SESSION['user']);
+    $userRow=mysql_fetch_array($res);
+} 
+?>
+<!-- End of form handling -->
+
+
+
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -41,9 +86,10 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="home.php">MoneyManager</a> 
-                <div class="andmsg" style="color:white;"><a href="www.semicolon.com";>By semiColon Tech.</a></div>
-                <div class="andmsg" style="color:white;">Android app will be availabe soon &nbsp;</div>
+                <a class="navbar-brand" href="home.php">MoneyManager</a> <hr>
+                <div class="brand"  style="color:white;"><a href="www.flynlabs.tk";>By Flyn labs.</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="play.google.com">Android App</a></div><br />
+                <!-- <div   style="color:white; position:centre;">Android app &nbsp;</div> -->
             </div>
 
  <div class="header"> 
@@ -112,37 +158,25 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <h3>Add debit</h3>
-                                    <form role="form">
-                                        
 
+                                    <?php
+                                    if ( isset($errMSG) ) { ?>
+                                     <div class="form-group">
+                                     <div class="alert alert-danger">
+                                     <span class="glyphicon glyphicon-info-sign"></span> <?php echo $errMSG; ?>
+                                     </div>
+                                     </div>
+                                     <?php  }  ?>
+
+                                     <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" autocomplete="off">
                                         <div class=" form-group input-group input-group-lg">
                                         <span class="input-group-addon">$</span>
-                                        <input type="text" class="form-control" placeholder="eg:250" />
+                                        <input type="text" name="amount" class="form-control" placeholder="eg:250" />
                                         <span class="input-group-addon">.00</span>
                                         </div>
-                                        <div class="form-group">
-                                            <hr>
-                                            <label>Keyword</label>
-                                            <input class="form-control" placeholder="Enter Keyword" />
-                                        </div>                                
                                         
                                         
-                                        <div class="form-group">
-                                            <label>Notes</label>
-                                            <textarea class="form-control" rows="3"></textarea>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label>Choose Category</label>
-                                            <select class="form-control">
-                                                <option>One Vale</option>
-                                                <option>Two Vale</option>
-                                                <option>Three Vale</option>
-                                                <option>Four Vale</option>
-                                            </select>
-                                        </div>
-                                        
-                                        <button type="submit" class="btn btn-primary">Submit Button</button>
+                                        <button type="submit" name="submit" class="btn btn-primary">Submit Button</button>
                                         <button type="reset" class="btn btn-default">Reset Button</button>
 
                                     </form>
@@ -154,7 +188,7 @@
                     <div class="panel panel-primary text-center no-boder bg-color-green">
                         <div class="panel-body">
                             <i class="fa fa-money fa-3x"></i>
-                            <h3>120 Rs </h3>
+                            <h3><?php echo $userRow['balance']; ?> </h3>
                         </div>
                         <div class="panel-footer back-footer-green">
                            Wallet Balance
@@ -163,7 +197,7 @@
                     <div class="panel panel-primary text-center no-boder bg-color-red">
                         <div class="panel-body">
                             <i class="fa fa-money fa-3x"></i>
-                            <h3>20,000 Rs </h3>
+                            <h3><?php echo $userRow['spend']; ?></h3>
                         </div>
                         <div class="panel-footer back-footer-red">
                             Spendings
@@ -177,7 +211,7 @@
                     <div class="col-md-12">
                         
                          <p>
-                        Add your debits here, we will keep track of your credits.
+                        Add your debits here, we will keep track of your credits(Note: Auto retrieval of dates).
                         </p>
                     </div>
                 </div>
